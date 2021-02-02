@@ -1004,7 +1004,9 @@ class ContentExtractor(object):
         return self.get_node_gravity_score(node) or 0
 
     def get_node_gravity_score(self, node):
-        gravity_score = self.parser.getAttribute(node, 'gravityScore')
+        ### Alex fix
+        gravity_score = self.parser.getAttribute(node, 'gravityNodes')
+        ### gravity_score = self.parser.getAttribute(node, 'gravityScore')
         if not gravity_score:
             return None
         return float(gravity_score)
