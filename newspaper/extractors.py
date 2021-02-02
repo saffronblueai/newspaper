@@ -24,6 +24,8 @@ from urllib.parse import urljoin, urlparse, urlunparse
 from . import urls
 from .utils import StringReplacement, StringSplitter
 
+from lxml.etree import tostring
+
 log = logging.getLogger(__name__)
 
 MOTLEY_REPLACEMENT = StringReplacement("&#65533;", "")
@@ -770,9 +772,9 @@ class ContentExtractor(object):
                 tags.append(tag)
         return set(tags)
 
-    def calculate_best_node(self, doc):
+    def calculate_best_node(self, doc, keywords):
         top_node = None
-        nodes_to_check = self.nodes_to_check(doc)
+        nodes_to_check = self.nodes_to_check(doc, keywords)
         starting_boost = float(1.0)
         cnt = 0
         i = 0
@@ -832,6 +834,9 @@ class ContentExtractor(object):
 
         top_node_score = 0
         for e in parent_nodes:
+            #print("------------eval_node------------------")
+            #print(tostring(e))
+            #print("------------END------------------")
             score = self.get_score(e)
 
             if score > top_node_score:
@@ -840,6 +845,8 @@ class ContentExtractor(object):
 
             if top_node is None:
                 top_node = e
+                top_node_score = score
+                
         return top_node
 
     def is_boostable(self, node):
@@ -1004,12 +1011,13 @@ class ContentExtractor(object):
         return self.get_node_gravity_score(node) or 0
 
     def get_node_gravity_score(self, node):
-        gravity_score = self.parser.getAttribute(node, 'gravityScore')
+        ### Alex fix
+        gravity_score = self.parser.getAttribute(node, 'gravityNodes')
         if not gravity_score:
             return None
         return float(gravity_score)
 
-    def nodes_to_check(self, doc):
+    def nodes_to_check(self, doc, keywords):
         """Returns a list of nodes we want to search
         on like paragraphs and tables
         """

@@ -209,7 +209,11 @@ class Article(object):
         self.set_html(html)
         self.set_title(title)
 
-    def parse(self):
+    def parse(self, keywords=[]):
+        """Parse html. If keywords are specified the detected body must
+        include at least one of them.
+        """
+        
         self.throw_if_not_downloaded_verbose()
 
         self.doc = self.config.get_parser().fromstring(self.html)
@@ -270,7 +274,7 @@ class Article(object):
         # Before any computations on the body, clean DOM object
         self.doc = document_cleaner.clean(self.doc)
 
-        self.top_node = self.extractor.calculate_best_node(self.doc)
+        self.top_node = self.extractor.calculate_best_node(self.doc, keywords)
         if self.top_node is not None:
             video_extractor = VideoExtractor(self.config, self.top_node)
             self.set_movies(video_extractor.get_videos())
